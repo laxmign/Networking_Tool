@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Version History</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #C5C5E3; /* Darker Lavender Background */
+            color: black;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 70%;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #E0E0F8; /* Slightly darker Ghost White container */
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        h1, h2 {
+            color: black;
+            text-align: center;
+        }
+
+        label {
+            color: black;
+        }
+
+        textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        textarea {
+            height: 150px;
+        }
+
+        .button {
+            padding: 12px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff69b4; /* Pink Color for buttons */
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .button:hover {
+            background-color: #ff1493; /* Darker Pink on hover */
+        }
+
+        .output {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #f5f5f5;
+            color: black;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        #compare-section {
+            margin-top: 20px;
+        }
+
+        .icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            font-size: 16px;
+            background-color: #581bc2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background-color: #555;
+        }
+
+        /* Styling for smaller screens */
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+            }
+
+            .button {
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="goBack()">← Back</button>
+
+<div class="container">
+    <h1>Network Configuration Backup Tool</h1>
+    
+    <h2>Install New Version</h2>
+    <label for="config">Enter Network Configuration (JSON format):</label>
+    <textarea id="config"></textarea>
+    <button class="button" onclick="installVersion()">Install Version</button>
+    
+    <h2>Version History</h2>
+    <button class="button" onclick="listVersions()">List of Previous Versions</button>
+    <button class="button" onclick="showCompare()">Compare Versions</button>
+    
+    <div id="output" class="output"></div>
+
+    <div id="compare-section" style="display:none;">
+        <h3>Compare Versions</h3>
+        <label for="versionToCompare">Select a version to compare with the current one:</label>
+        <select id="versionToCompare">
+            <!-- Options will be added by JavaScript -->
+        </select><br><br>
+        <button class="button" onclick="compareVersions()">Compare</button>
+    </div>
+</div>
+
+<script>
+
+    function goBack() {
+        window.history.back();
+    }
+
+    function getVersions() {
+        return JSON.parse(localStorage.getItem('versionHistory')) || [];
+    }
+
+    function saveVersions(versions) {
+        localStorage.setItem('versionHistory', JSON.stringify(versions));
+    }
+
+    function installVersion() {
+        const config = document.getElementById('config').value.trim();
+        if (!config) {
+            alert('Please enter a valid configuration.');
+            return;
+        }
+
+        let versionHistory = getVersions();
+        const newVersion = {
+            version: `v${versionHistory.length + 1}`,
+            config: JSON.parse(config)
+        };
+        versionHistory.push(newVersion);
+        saveVersions(versionHistory);
+
+        alert(`Version ${newVersion.version} installed successfully!`);
+        document.getElementById('config').value = '';
+    }
+
+    function listVersions() {
+        let versionHistory = getVersions();
+        if (versionHistory.length === 0) {
+            document.getElementById('output').innerHTML = "<p>No previous versions available.</p>";
+            return;
+        }
+
+        let output = "<h3>List of Previous Versions</h3><ul>";
+        versionHistory.forEach(v => {
+            output += `<li>${v.version}</li>`;
+        });
+        output += "</ul>";
+        document.getElementById("output").innerHTML = output;
+        hideSections();
+    }
+
+    function showCompare() {
+        let versionHistory = getVersions();
+        if (versionHistory.length === 0) {
+            alert("No versions available to compare.");
+            return;
+        }
+
+        populateSelectOptions('versionToCompare');
+        document.getElementById("compare-section").style.display = "block";
+    }
+
+    function populateSelectOptions(selectId) {
+        let select = document.getElementById(selectId);
+        select.innerHTML = "";
+        let versionHistory = getVersions();
+        versionHistory.forEach(v => {
+            let option = document.createElement("option");
+            option.value = v.version;
+            option.text = v.version;
+            select.add(option);
+        });
+    }
+
+    function compareVersions() {
+        let versionHistory = getVersions();
+        let currentVersion = versionHistory[versionHistory.length - 1];
+        let versionToCompare = document.getElementById("versionToCompare").value;
+
+        let compareVersion = versionHistory.find(v => v.version === versionToCompare);
+        if (!compareVersion) {
+            alert("Selected version not found.");
+            return;
+        }
+
+        let diff = JSON.stringify(currentVersion.config, null, 2) === JSON.stringify(compareVersion.config, null, 2) 
+            ? "No differences found." 
+            : `Differences:\nCurrent Version (${currentVersion.version}):\n${JSON.stringify(currentVersion.config, null, 2)}\n\nSelected Version (${compareVersion.version}):\n${JSON.stringify(compareVersion.config, null, 2)}`;
+
+        document.getElementById("output").innerHTML = `<pre>${diff}</pre>`;
+    }
+
+    function hideSections() {
+        document.getElementById("compare-section").style.display = "none";
+    }
+</script>
+
+</body>
+</html>

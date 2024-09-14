@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Integration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16px; /* Reduced font size */
+            background-color: #A45D25; /* Background color to match the image */
+            color: white; /* Adjust text color for readability */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 60%;
+            margin: auto;
+            padding: 20px; /* Adjusted padding */
+            background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent white background for container */
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Add a shadow for depth */
+        }
+        h1 {
+            text-align: center;
+            color: #fff; /* White text color for the heading */
+            font-size: 1.5em; /* Reduced font size */
+        }
+        .button {
+            padding: 10px 15px; /* Adjusted padding */
+            margin: 5px 0; /* Adjusted margin */
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px; /* Rounded corners for buttons */
+            transition: background-color 0.3s ease; /* Smooth transition on hover */
+            font-size: 1em; /* Reduced font size */
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .output {
+            margin-top: 20px; /* Adjusted margin */
+            padding: 15px; /* Adjusted padding */
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            color: black;
+            font-family: monospace;
+            white-space: pre-wrap; /* Keep the formatting of output text */
+            font-size: 1em; /* Reduced font size */
+        }
+        .health-good {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .health-warning {
+            color: orange;
+            font-weight: bold;
+        }
+        .health-bad {
+            color: red;
+            font-weight: bold;
+        }
+        .device-performance {
+            margin-bottom: 20px; /* Adjusted margin */
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px; /* Adjusted padding */
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            font-size: 16px;
+            background-color: #581bc2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background-color: #555;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <button class="back-button" onclick="goBack()">← Back</button>
+
+    <h1>Monitoring Integration</h1>
+
+    <button class="button" onclick="showNetworkStatus()">Network Status</button>
+    <button class="button" onclick="showDevicePerformance()">Device Performance</button>
+    <button class="button" onclick="showHealthIndicator()">Health Indicator</button>
+
+    <div id="output" class="output"></div>
+</div>
+
+<script>
+     function goBack() {
+        window.history.back();
+    }
+
+    function showNetworkStatus() {
+        // Simulating network status data
+        const networkStatus = {
+            connected: true,
+            uptime: "3 days, 4 hours, 22 minutes",
+            performance: "Good"
+        };
+
+        const statusHtml = `
+            <h3>Network Status</h3>
+            <p>Connected: ${networkStatus.connected ? 'Yes' : 'No'}</p>
+            <p>Uptime: ${networkStatus.uptime}</p>
+            <p>Performance: ${networkStatus.performance}</p>
+        `;
+
+        document.getElementById("output").innerHTML = statusHtml;
+    }
+
+    function showDevicePerformance() {
+        // Simulating device performance data
+        const devices = [
+            { name: "Router", cpu: "30%", memory: "50%", bandwidth: "120 Mbps" },
+            { name: "Switch", cpu: "20%", memory: "40%", bandwidth: "80 Mbps" },
+            { name: "Server", cpu: "70%", memory: "80%", bandwidth: "200 Mbps" }
+        ];
+
+        let performanceHtml = `<h3>Device Performance</h3>`;
+        devices.forEach(device => {
+            performanceHtml += `
+                <div class="device-performance">
+                    <p>Device: ${device.name}</p>
+                    <p>CPU Usage: ${device.cpu}</p>
+                    <p>Memory Usage: ${device.memory}</p>
+                    <p>Bandwidth Usage: ${device.bandwidth}</p>
+                </div>
+            `;
+        });
+
+        document.getElementById("output").innerHTML = performanceHtml;
+    }
+
+    function showHealthIndicator() {
+        // Simulating network health data
+        const health = "Good";  // This could be "Good", "Warning", or "Critical"
+
+        let healthClass = "";
+        switch (health) {
+            case "Good":
+                healthClass = "health-good";
+                break;
+            case "Warning":
+                healthClass = "health-warning";
+                break;
+            case "Critical":
+                healthClass = "health-bad";
+                break;
+        }
+
+        const healthHtml = `
+            <h3>Health Indicator</h3>
+            <p class="${healthClass}">Network Health: ${health}</p>
+        `;
+
+        document.getElementById("output").innerHTML = healthHtml;
+    }
+</script>
+
+</body>
+</html>

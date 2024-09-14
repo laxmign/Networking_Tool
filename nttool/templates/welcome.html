@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #6a0dad;
+            color: white;
+            text-align: center;
+        }
+        .navbar {
+            background-color: #2d2d72;
+            padding: 10px 0;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 14px 20px;
+            display: inline-block;
+        }
+        .container {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .welcome-box {
+            background-color: #ffffff;
+            color: #000000;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        }
+        .welcome-box h1 {
+            margin: 0 0 20px;
+        }
+        .welcome-box button {
+            padding: 10px 20px;
+            background-color: #6a0dad;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .welcome-box button:hover {
+            background-color: #5a008f;
+        }
+        .footer {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: left;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="#">Home</a>
+        <a href="#">Login</a>
+        <a href="#">About Us</a>
+        <a href="#">Contact Us</a>
+    </div>
+
+    <div class="container">
+        <div class="welcome-box">
+            <h1>WELCOME!!</h1>
+
+            <button onclick="window.location.href='"C:\Users\student.STUDENTS\Downloads\Analytix\dashboard.html"'">Go to Dashboard</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        <button>Let's Chat!</button>
+    </div>
+</body>
+</html>
+

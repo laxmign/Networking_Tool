@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Deployment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 18px; /* Increased font size */
+            background-color: #C66442; /* Background color to match the image */
+            color: white; /* White text color for readability */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 60%;
+            margin: auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent white background */
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Add a shadow for depth */
+        }
+        h1 {
+            text-align: center;
+            color: #fff; /* White text color for the heading */
+            font-size: 26px; /* Increased font size */
+        }
+        .button {
+            padding: 12px 18px; /* Increased padding for larger buttons */
+            margin: 5px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px; /* Rounded corners for buttons */
+            transition: background-color 0.3s ease; /* Smooth transition on hover */
+            font-size: 18px; /* Increased font size */
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            color: black;
+            font-family: monospace;
+            white-space: pre-wrap; /* Keep the formatting of output text */
+            font-size: 18px; /* Increased font size */
+        }
+        .profile-item {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            font-size: 18px; /* Increased font size */
+        }
+        /* Back Button */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            font-size: 16px;
+            background-color: #581bc2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Back Button -->
+<button class="back-button" onclick="goBack()">← Back</button>
+
+<div class="container">
+    <h1>Configuration Deployment</h1>
+
+    <button class="button" onclick="showCreateManageProfiles()">Create and Manage Configuration Profiles</button>
+    <button class="button" onclick="showDeployChanges()">Deploy Changes</button>
+    <button class="button" onclick="showTrackDeploymentStatus()">Track Deployment Status</button>
+
+    <div id="output" class="output"></div>
+</div>
+
+<script>
+    let profiles = [];
+
+    // Function for Back Button
+    function goBack() {
+        window.history.back();
+    }
+
+    function showCreateManageProfiles() {
+        let outputHtml = `
+            <h3>Create and Manage Configuration Profiles</h3>
+            <label for="profileName">Profile Name:</label>
+            <input type="text" id="profileName"><br><br>
+            <label for="profileConfig">Configuration (JSON format):</label><br>
+            <textarea id="profileConfig" rows="5" cols="40"></textarea><br><br>
+            <button class="button" onclick="createProfile()">Create Profile</button>
+            <hr>
+            <h4>Existing Profiles:</h4>
+            <div id="profileList">
+                ${profiles.length > 0 ? profiles.map((p, index) => `<div class="profile-item"><strong>${p.name}</strong>: ${JSON.stringify(p.config)} <button onclick="deleteProfile(${index})">Delete</button></div>`).join('') : '<p>No profiles created yet.</p>'}
+            </div>
+        `;
+
+        document.getElementById("output").innerHTML = outputHtml;
+    }
+
+    function createProfile() {
+        const profileName = document.getElementById("profileName").value.trim();
+        const profileConfig = document.getElementById("profileConfig").value.trim();
+
+        if (!profileName || !profileConfig) {
+            alert("Please enter both profile name and configuration.");
+            return;
+        }
+
+        try {
+            const parsedConfig = JSON.parse(profileConfig);
+            profiles.push({ name: profileName, config: parsedConfig });
+            showCreateManageProfiles();
+        } catch (e) {
+            alert("Invalid JSON format. Please correct it and try again.");
+        }
+    }
+
+    function deleteProfile(index) {
+        profiles.splice(index, 1);
+        showCreateManageProfiles();
+    }
+
+    function showDeployChanges() {
+        if (profiles.length === 0) {
+            alert("No profiles available to deploy.");
+            return;
+        }
+
+        let outputHtml = `
+            <h3>Deploy Changes</h3>
+            <label for="deployProfile">Select a Profile to Deploy:</label>
+            <select id="deployProfile">
+                ${profiles.map((p, index) => `<option value="${index}">${p.name}</option>`).join('')}
+            </select><br><br>
+            <button class="button" onclick="deployProfile()">Deploy Profile</button>
+        `;
+
+        document.getElementById("output").innerHTML = outputHtml;
+    }
+
+    function deployProfile() {
+        const selectedProfileIndex = document.getElementById("deployProfile").value;
+        const selectedProfile = profiles[selectedProfileIndex];
+
+        // Simulating deployment status
+        document.getElementById("output").innerHTML = `<h3>Deploying Profile "${selectedProfile.name}"...</h3>`;
+        
+        setTimeout(() => {
+            document.getElementById("output").innerHTML += `<p>Profile "${selectedProfile.name}" deployed successfully.</p>`;
+        }, 2000);  // Simulate deployment delay
+    }
+
+    function showTrackDeploymentStatus() {
+        // Simulating tracking status
+        let outputHtml = `
+            <h3>Track Deployment Status</h3>
+            <p>Last Deployment: <span id="deploymentStatus">Completed</span></p>
+        `;
+
+        document.getElementById("output").innerHTML = outputHtml;
+    }
+</script>
+
+</body>
+</html>

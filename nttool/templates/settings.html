@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #355E3B; /* Emerald Green Background */
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 60%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        h3 {
+            color: #333;
+        }
+        .button {
+            padding: 10px 15px;
+            margin: 5px 0;
+            border: none;
+            background-color: #355E3B;
+            color: white;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            text-align: center;
+            border-radius: 5px;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .button:hover {
+            background-color: #45a049;
+            transform: scale(1.02);
+        }
+        .output {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+        .input-field {
+            margin-bottom: 15px;
+        }
+        label {
+            color: #333;
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="email"], input[type="password"], select, textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+        }
+        input[disabled] {
+            background-color: #e9ecef;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            font-size: 16px;
+            background-color: #581bc2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+
+
+    <button class="back-button" onclick="goBack()">← Back</button>
+
+<div class="container">
+    <h1>Settings</h1>
+
+    <button class="button" onclick="showManageUserAccount('{{ user_id }}')">Manage User Account</button>
+    <button class="button" onclick="showAddUsersDevices()">Add Users and Devices</button>
+    <button class="button" onclick="showNetworkSettings()">Network Settings</button>
+    <button class="button" onclick="showNotificationSettings()">Notification Settings</button>
+    <button class="button" onclick="showHelpContact()">Help and Contact Us</button>
+    <a href="{{ url_for('logout') }}" class="button">Log Out</a>
+
+
+    <div id="output" class="output"></div>
+</div>
+
+<script>
+
+function goBack() {
+        window.history.back();
+    }
+
+ 
+
+    function showManageUserAccount(userId) {
+    fetch(`/api/user/${userId}`)
+        .then(response => response.json())
+        .then(accountInfo => {
+            
+            const manageUserHtml = `
+                <h3>Manage User Account</h3>
+                <div class="input-field">
+                    <label>Username: </label>
+                    <input type="text" value="${accountInfo. first_name}" disabled>
+                </div>
+                <div class="input-field">
+                    <label>Email: </label>
+                    <input type="email" value="${accountInfo.email}">
+                </div>
+                <div class="input-field">
+                    <label>Role: </label>
+                    <input type="text" value="${accountInfo.role}" disabled>
+                </div>
+                <div class="input-field">
+                    <label>Permissions: </label>
+                    <input type="text" value="${accountInfo.permissions ? accountInfo.permissions.join(', ') : ''}" disabled>
+                </div>
+                <div class="input-field">
+                    <label>Password: </label>
+                    <input type="password" placeholder="Enter new password">
+                </div>
+                <button class="button" onclick="saveChanges(${userId})">Save Changes</button>
+            `;
+
+            document.getElementById("output").innerHTML = manageUserHtml;
+        })
+        .catch(error => {
+            console.error('Error fetching user data:', error);
+            document.getElementById("output").innerHTML = '<p>Error loading user details.</p>';
+        });
+}
+
+function saveChanges(userId) {
+    // Implement the save functionality here
+    alert('User information updated successfully.');
+}
+
+
+    function showAddUsersDevices() {
+        const addUserDeviceHtml = `
+            <h3>Add Users and Devices</h3>
+            <div class="input-field">
+                <label>User/Device Name: </label>
+                <input type="text" placeholder="Enter name">
+            </div>
+            <div class="input-field">
+                <label>Type: </label>
+                <select>
+                    <option value="user">User</option>
+                    <option value="device">Device</option>
+                </select>
+            </div>
+            <div class="input-field">
+                <label>Email/Device IP: </label>
+                <input type="text" placeholder="Enter email or IP">
+            </div>
+            <button class="button" onclick="alert('User or device added successfully.')">Add</button>
+        `;
+
+        document.getElementById("output").innerHTML = addUserDeviceHtml;
+    }
+
+    function showNetworkSettings() {
+        const networkSettingsHtml = `
+            <h3>Network Settings</h3>
+            <div class="input-field">
+                <label>IP Address: </label>
+                <input type="text" placeholder="192.168.0.1">
+            </div>
+            <div class="input-field">
+                <label>Subnet Mask: </label>
+                <input type="text" placeholder="255.255.255.0">
+            </div>
+            <div class="input-field">
+                <label>Gateway: </label>
+                <input type="text" placeholder="192.168.0.254">
+            </div>
+            <div class="input-field">
+                <label>DNS Servers: </label>
+                <input type="text" placeholder="8.8.8.8, 8.8.4.4">
+            </div>
+            <div class="input-field">
+                <label>Firewall Rules: </label>
+                <textarea placeholder="Enter firewall rules" rows="5" cols="40"></textarea>
+            </div>
+            <button class="button" onclick="alert('Network settings saved successfully.')">Save Settings</button>
+        `;
+
+        document.getElementById("output").innerHTML = networkSettingsHtml;
+    }
+
+    function showNotificationSettings() {
+        const notificationSettingsHtml = `
+            <h3>Notification Settings</h3>
+            <div class="input-field">
+                <label>Email Notifications: </label>
+                <input type="checkbox" checked> Enable
+            </div>
+            <div class="input-field">
+                <label>SMS Notifications: </label>
+                <input type="checkbox"> Enable
+            </div>
+            <div class="input-field">
+                <label>Notification Frequency: </label>
+                <select>
+                    <option value="immediate">Immediate</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                </select>
+            </div>
+            <button class="button" onclick="alert('Notification settings updated successfully.')">Save Settings</button>
+        `;
+
+        document.getElementById("output").innerHTML = notificationSettingsHtml;
+    }
+
+    function showHelpContact() {
+        const helpContactHtml = `
+            <h3>Help and Contact Us</h3>
+            <p>If you need assistance, please contact our support team:</p>
+            <ul>
+                <li>Email: support@example.com</li>
+                <li>Phone: 1-800-123-4567</li>
+                <li>Live Chat: <a href="#">Click here to start a chat</a></li>
+            </ul>
+        `;
+
+        document.getElementById("output").innerHTML = helpContactHtml;
+    }
+
+   
+</script>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Flask environment variables
+instance/
+.env
+*.env
+
+# Flask development environment
+*.log
+*.sqlite3
+
+# Ignore virtual environment directories
+venv/
+ENV/
+env/
+.venv/
+
+# Ignore IDE and editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+
+# Node.js dependencies (if any frontend code is included)
+node_modules/
+
+# MacOS files
+.DS_Store
+
+# Static and media files (optional, if you handle them differently)
+static/
+media/
+
+# Cache files
+*.cache
+
+# Gunicorn and supervisor logs (if applicable)
+gunicorn.log
+supervisord.log
