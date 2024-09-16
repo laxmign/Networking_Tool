@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Version History - Analytix</title>
+    <title>Recent Activity - Analytix</title>
     <style>
         :root {
             --primary-color: #1a1f50;
@@ -57,14 +57,13 @@
             padding: 2rem;
             max-width: 1200px;
             margin: 0 auto;
-            margin-bottom: 5rem; /* Avoid overlapping with the footer */
         }
 
         h1, h2 {
             color: var(--primary-color);
         }
 
-        .version-list, .create-version {
+        .activity-list, .activity-filter {
             background-color: #fff;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -102,23 +101,18 @@
             background-color: var(--secondary-color);
         }
 
-        .btn-small {
-            font-size: 0.8rem;
-            padding: 0.3rem 0.7rem;
-        }
-
         form {
             display: flex;
-            flex-direction: column;
+            flex-wrap: wrap;
             gap: 1rem;
+            align-items: center;
         }
 
         label {
             font-weight: bold;
         }
 
-        input[type="text"], textarea {
-            width: 100%;
+        input[type="date"], select {
             padding: 0.5rem;
             border: 1px solid #ddd;
             border-radius: 3px;
@@ -148,52 +142,53 @@
     </header>
 
     <main>
-        <h1>Version History</h1>
+        <h1>Recent Activity</h1>
         
-        <section class="version-list">
+        <section class="activity-list">
             <table>
                 <thead>
                     <tr>
-                        <th>Version</th>
-                        <th>Created At</th>
-                        <th>Created By</th>
-                        <th>Actions</th>
+                        <th>Timestamp</th>
+                        <th>Description</th>
+                        <th>User</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for version in versions %}
+                    {% for activity in activities %}
                     <tr>
-                        <td>{{ version.version_number }}</td>
-                        <td>{{ version.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                        <td>{{ version.user.first_name }} {{ version.user.last_name }}</td>
-                        <td>
-                            <a href="{{ url_for('compare_version', version_id=version.id) }}" class="btn btn-small">Compare</a>
-                            <a href="{{ url_for('restore_version', version_id=version.id) }}" class="btn btn-small">Restore</a>
-                        </td>
+                        <td>{{ activity.timestamp }}</td>
+                        <td>{{ activity.description }}</td>
+                        <td>{{ activity.user.first_name }} {{ activity.user.last_name }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </section>
 
-        <section class="create-version">
-            <h2>Create New Version</h2>
-            <form action="{{ url_for('create_version') }}" method="post">
+        <section class="activity-filter">
+            <h2>Filter Activities</h2>
+            <form action="{{ url_for('recent_activity') }}" method="get">
+                <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date" name="start_date">
                 
-                <label for="version_name">Version Name:</label>
-                <input type="text" id="version_name" name="version_name" required>
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date" name="end_date">
                 
-                <label for="version_description">Description:</label>
-                <textarea id="version_description" name="version_description" rows="4"></textarea>
+                <label for="activity_type">Activity Type:</label>
+                <select id="activity_type" name="activity_type">
+                    <option value="">All</option>
+                    <option value="login">Login</option>
+                    <option value="backup">Backup</option>
+                    <option value="deployment">Deployment</option>
+                    <option value="configuration">Configuration Change</option>
+                </select>
                 
-                <button type="submit" class="btn">Create Version</button>
+                <button type="submit" class="btn">Apply Filters</button>
             </form>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2023 Analytix. All rights reserved.</p>
-    </footer>
+   
 
     <script>
         // You can add any necessary JavaScript here

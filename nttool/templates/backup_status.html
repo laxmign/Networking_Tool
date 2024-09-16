@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Version History - Analytix</title>
+    <title>Backup Status - Analytix</title>
     <style>
         :root {
             --primary-color: #1a1f50;
@@ -57,14 +57,13 @@
             padding: 2rem;
             max-width: 1200px;
             margin: 0 auto;
-            margin-bottom: 5rem; /* Avoid overlapping with the footer */
         }
 
         h1, h2 {
             color: var(--primary-color);
         }
 
-        .version-list, .create-version {
+        .backup-list, .create-backup {
             background-color: #fff;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -107,23 +106,6 @@
             padding: 0.3rem 0.7rem;
         }
 
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        input[type="text"], textarea {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-        }
-
         footer {
             background-color: var(--primary-color);
             color: var(--text-color);
@@ -148,27 +130,28 @@
     </header>
 
     <main>
-        <h1>Version History</h1>
+        <h1>Backup Status</h1>
         
-        <section class="version-list">
+        <section class="backup-list">
+            <h2>Recent Backups</h2>
             <table>
                 <thead>
                     <tr>
-                        <th>Version</th>
-                        <th>Created At</th>
-                        <th>Created By</th>
+                        <th>Timestamp</th>
+                        <th>Status</th>
+                        <th>Message</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for version in versions %}
+                    {% for backup in backups %}
                     <tr>
-                        <td>{{ version.version_number }}</td>
-                        <td>{{ version.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                        <td>{{ version.user.first_name }} {{ version.user.last_name }}</td>
+                        <td>{{ backup.timestamp }}</td>
+                        <td>{{ backup.status }}</td>
+                        <td>{{ backup.message }}</td>
                         <td>
-                            <a href="{{ url_for('compare_version', version_id=version.id) }}" class="btn btn-small">Compare</a>
-                            <a href="{{ url_for('restore_version', version_id=version.id) }}" class="btn btn-small">Restore</a>
+                            <a href="{{ url_for('restore_backup', backup_id=backup.id) }}" class="btn btn-small">Restore</a>
+                            <a href="{{ url_for('download_backup', backup_id=backup.id) }}" class="btn btn-small">Download</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -176,24 +159,16 @@
             </table>
         </section>
 
-        <section class="create-version">
-            <h2>Create New Version</h2>
-            <form action="{{ url_for('create_version') }}" method="post">
-                
-                <label for="version_name">Version Name:</label>
-                <input type="text" id="version_name" name="version_name" required>
-                
-                <label for="version_description">Description:</label>
-                <textarea id="version_description" name="version_description" rows="4"></textarea>
-                
-                <button type="submit" class="btn">Create Version</button>
+        <section class="create-backup">
+            <h2>Create New Backup</h2>
+            <form action="{{ url_for('create_backup') }}" method="post">
+               
+                <button type="submit" class="btn">Create Backup</button>
             </form>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2023 Analytix. All rights reserved.</p>
-    </footer>
+    
 
     <script>
         // You can add any necessary JavaScript here

@@ -105,6 +105,22 @@
         .back-button:hover {
             background-color: #555;
         }
+
+        .logout-button {
+            display: block;
+            padding: 10px 15px;
+            margin-top: 20px;
+            background-color: #f44336;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
     </style>
 </head>
 <body>
@@ -115,12 +131,11 @@
 <div class="container">
     <h1>Settings</h1>
 
-    <button class="button" onclick="showManageUserAccount('{{ user_id }}')">Manage User Account</button>
+    <button class="button" onclick="showManageUserAccount('{{ user.id }}')">Manage User Account</button>
     <button class="button" onclick="showAddUsersDevices()">Add Users and Devices</button>
     <button class="button" onclick="showNetworkSettings()">Network Settings</button>
     <button class="button" onclick="showNotificationSettings()">Notification Settings</button>
-    <button class="button" onclick="showHelpContact()">Help and Contact Us</button>
-    <a href="{{ url_for('logout') }}" class="button">Log Out</a>
+    <a class="logout-button" href="{{ url_for('logout') }}" >Log Out</a>
 
 
     <div id="output" class="output"></div>
@@ -178,30 +193,122 @@ function saveChanges(userId) {
 }
 
 
-    function showAddUsersDevices() {
-        const addUserDeviceHtml = `
-            <h3>Add Users and Devices</h3>
-            <div class="input-field">
-                <label>User/Device Name: </label>
-                <input type="text" placeholder="Enter name">
-            </div>
-            <div class="input-field">
-                <label>Type: </label>
-                <select>
-                    <option value="user">User</option>
-                    <option value="device">Device</option>
-                </select>
-            </div>
-            <div class="input-field">
-                <label>Email/Device IP: </label>
-                <input type="text" placeholder="Enter email or IP">
-            </div>
-            <button class="button" onclick="alert('User or device added successfully.')">Add</button>
-        `;
+function showAddUsersDevices() {
+    const addUserDeviceHtml = `
+        <h3>Add Users and Devices</h3>
+        <div class="input-field">
+            <label>User/Device Name: </label>
+            <input id="name-input" type="text" placeholder="Enter name">
+        </div>
+        <div class="input-field">
+            <label>Type: </label>
+            <select id="type-input">
+                <option value="user">User</option>
+                <option value="device">Device</option>
+            </select>
+        </div>
+        <div class="input-field">
+            <label>Email/Device IP: </label>
+            <input id="identifier-input" type="text" placeholder="Enter email or IP">
+        </div>
+        <button class="button" onclick="addUserOrDevice()">Add</button>
+    `;
 
-        document.getElementById("output").innerHTML = addUserDeviceHtml;
+    document.getElementById("output").innerHTML = addUserDeviceHtml;
+
+    function addUserOrDevice() {
+    // Get values from the input fields
+    const name = document.getElementById('name-input').value;
+    const type = document.getElementById('type-input').value;
+    const identifier = document.getElementById('identifier-input').value;
+
+    // Validate inputs
+    if (!name || !identifier) {
+        alert('Please fill in all fields.');
+        return;
     }
 
+    // Log or display the captured details
+    console.log('Added details:');
+    console.log('Name:', name);
+    console.log('Type:', type);
+    console.log('Identifier (Email/IP):', identifier);
+
+    // You can also display the details in the DOM (optional)
+    document.getElementById('output').innerHTML += `
+        <div>
+            <h4>Added Device/User Details:</h4>
+            <p>Name: ${name}</p>
+            <p>Type: ${type}</p>
+            <p>Identifier (Email/IP): ${identifier}</p>
+        </div>
+    `;
+
+    // (Optional) Send the details to the server if needed
+    fetch('/add_user_device', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            name: name,
+            type: type,
+            identifier: identifier
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message);
+        } else {
+            alert('Error: Something went wrong.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error: Could not add user or device.');
+    });
+}
+
+
+}
+
+function addUserOrDevice() {
+    const name = document.getElementById('name-input').value;
+    const type = document.getElementById('type-input').value;
+    const identifier = document.getElementById('identifier-input').value;
+
+    // Validate inputs
+    if (!name || !identifier) {
+        alert('Please fill in all fields.');
+        return;
+    }
+
+    // Send data to the server
+    fetch('/add_user_device', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            name: name,
+            type: type,
+            identifier: identifier
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message);
+        } else {
+            alert('Error: Something went wrong.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error: Could not add user or device.');
+    });
+}
     function showNetworkSettings() {
         const networkSettingsHtml = `
             <h3>Network Settings</h3>
@@ -256,19 +363,7 @@ function saveChanges(userId) {
         document.getElementById("output").innerHTML = notificationSettingsHtml;
     }
 
-    function showHelpContact() {
-        const helpContactHtml = `
-            <h3>Help and Contact Us</h3>
-            <p>If you need assistance, please contact our support team:</p>
-            <ul>
-                <li>Email: support@example.com</li>
-                <li>Phone: 1-800-123-4567</li>
-                <li>Live Chat: <a href="#">Click here to start a chat</a></li>
-            </ul>
-        `;
-
-        document.getElementById("output").innerHTML = helpContactHtml;
-    }
+   
 
    
 </script>

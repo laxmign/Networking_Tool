@@ -72,6 +72,9 @@
             display: block;
             margin-top: 10px;
         }
+        .login-box .forgot-password {
+            margin-top: 5px;
+        }
         .chat-button {
             padding: 15px 30px;
             background-color: #6f42c1;
@@ -96,6 +99,13 @@
         .flash-message.danger {
             background-color: #f8d7da;
             color: #721c24;
+        }
+
+        .forgot-password {
+            color: #34b314;
+            text-decoration: none;
+            display: block;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -127,8 +137,9 @@
                 <button type="submit">Login</button>
             </form>
             <a href="{{ url_for('register') }}">Don't have an account? Register here</a>
+            <a class="forgot-password" href="{{ url_for('forgot_password') }}" >Forgot Password?</a>
         </div>
     </div>
-    <button class="chat-button">Let's Chat!</button>
+  
 </body>
 </html>
