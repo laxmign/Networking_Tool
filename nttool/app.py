@@ -1,8 +1,9 @@
 from datetime import datetime
 import random
+import json
 import threading
 from flask_socketio import SocketIO, emit
-from flask import Flask, jsonify, render_template, request, redirect, send_file, session, url_for, flash
+from flask import Flask,jsonify, render_template, request, redirect, send_file, session, url_for, flash
 from models import (
     ActivityLog, BackupStatus, ConfigurationBackup, ConfigurationProfile, 
     ConfigurationVersion, DeploymentHistory, Device, db, User, Role, Profile, 
@@ -12,6 +13,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from flask_migrate import Migrate
 from functools import wraps
+from deepdiff import DeepDiff
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -167,11 +169,13 @@ def settings():
 @app.route('/api/user/<int:user_id>', methods=['GET'])
 def get_user_details(user_id):
     try:
+        # Query the database for the user with the given user_id
         user = User.query.get(user_id)
         
         if user is None:
             return jsonify({"message": "User not found"}), 404
 
+        # Prepare the user details to return
         user_data = {
             'id': user.id,
             'first_name': user.first_name,
@@ -180,7 +184,7 @@ def get_user_details(user_id):
             'role': user.role.name if user.role else None,
             'profile': {
                 'bio': user.profile.bio if user.profile else None,
-                'profile_picture': user.profile.profile_picture if user.profile else None
+                'website': user.profile.website if user.profile else None
             } if user.profile else None
         }
         
@@ -188,6 +192,7 @@ def get_user_details(user_id):
 
     except Exception as e:
         return jsonify({"message": str(e)}), 500
+
 
 @app.route('/versionhistory')
 @login_required
@@ -359,54 +364,130 @@ def recent_activity():
     return render_template('recent_activity.html', activities=activities)
 
 
-@app.route('/compare_version/<int:version_id>')
+@app.route('/compare_version/<int:version_id>', methods=['GET', 'POST'])
 @login_required
 def compare_version(version_id):
-    # TODO: Implement version comparison logic
     version = ConfigurationVersion.query.get(version_id)
+    
     if not version:
         flash('Version not found', 'danger')
         return redirect(url_for('version_history'))
-    
-    # For now, just display the version details
-    return render_template('compare_version.html', version=version)
+
+    if request.method == 'POST':
+        # Fetch the second version to compare from the form data
+        second_version_id = request.form.get('second_version_id')
+
+        # Check if the same version is selected for comparison
+        if int(second_version_id) == version_id:
+            flash('Cannot compare the same version with itself. Please select a different version.', 'danger')
+            return redirect(url_for('compare_version', version_id=version_id))
+
+        second_version = ConfigurationVersion.query.get(second_version_id)
+
+        if not second_version:
+            flash('The second version to compare was not found', 'danger')
+            return redirect(url_for('compare_version', version_id=version_id))
+
+        # Ensure that both versions have a valid description before attempting to load JSON
+        if not version.description or not second_version.description:
+            flash('One or both versions have no description to compare.', 'danger')
+            return redirect(url_for('compare_version', version_id=version_id))
+
+        # Parse the JSON descriptions for both versions
+        try:
+            json_1 = json.loads(version.description)
+            json_2 = json.loads(second_version.description)
+        except json.JSONDecodeError:
+            flash('Invalid JSON format in one or both versions', 'danger')
+            return redirect(url_for('compare_version', version_id=version_id))
+
+        # Use DeepDiff to find the differences between the two JSON objects
+        differences = DeepDiff(json_1, json_2, ignore_order=True).to_dict()
+
+        # Render the comparison result dynamically
+        return render_template('compare_version.html', version=version, second_version=second_version, differences=differences)
+
+    # On GET request, just render the page to allow the user to select a second version
+    all_versions = ConfigurationVersion.query.filter(ConfigurationVersion.id != version_id).all()
+    return render_template('compare_version.html', version=version, all_versions=all_versions)
+
 
 
 @app.route('/create_version', methods=['POST'])
 @login_required  # Ensure the user is logged in
 def create_version():
     version_number = request.form.get('version_name')
+    version_description = request.form.get('version_description')  # Get the description from the form
 
     # Validate input
     if not version_number:
-        flash('Version name is required', 'danger')
+        flash('Version name is required',  ('version','danger'))
+        return redirect(url_for('version_history'))
+
+    # Validate JSON format for description
+    try:
+        json_description = json.loads(version_description)  # Try to parse the description as JSON
+    except json.JSONDecodeError:
+        flash('Description must be a valid JSON format', ('version','danger'))
         return redirect(url_for('version_history'))
 
     try:
-        # Create new version entry
+        # Create new version entry with the description stored as JSON
         new_version = ConfigurationVersion(
             version_number=version_number,
             user_id=session['user_id'],  # User ID from session
-            created_at=datetime.utcnow()  # Automatically handled by default in the model
+            created_at=datetime.utcnow(),  # Automatically handled by default in the model
+            description=json.dumps(json_description)  # Store the description as a JSON string
         )
         db.session.add(new_version)  # Add the new version to the session
 
         # Log the activity for creating a new version
         activity = ActivityLog(
             user_id=session['user_id'],
-            description=f"Created new version {version_number}"
+            description=f"Import new version {version_number} with JSON description"
         )
         db.session.add(activity)  # Add the activity log to the session
 
         # Commit both the new version and the activity log
         db.session.commit()
 
-        flash(f'Version {version_number} created successfully!', 'success')
+        flash(f'Version {version_number} imported successfully with valid JSON description!',  ('version','success'))
     except Exception as e:
         db.session.rollback()  # Rollback changes if there is an error
-        flash(f'Error creating version: {str(e)}', 'danger')
+        flash(f'Error creating version: {str(e)}',  ('version','danger'))
     
     return redirect(url_for('version_history'))
+
+@app.route('/delete_version/<int:version_id>', methods=['POST'])
+@login_required
+def delete_version(version_id):
+    try:
+        # Fetch the version by its ID
+        version_to_delete = ConfigurationVersion.query.get(version_id)
+        
+        if version_to_delete:
+            # Delete the version
+            db.session.delete(version_to_delete)
+
+            # Log the deletion activity
+            activity = ActivityLog(
+                user_id=session['user_id'],
+                description=f"Deleted version {version_to_delete.version_number}"
+            )
+            db.session.add(activity)
+
+            # Commit the changes to the database
+            db.session.commit()
+            flash(f'Version {version_to_delete.version_number} deleted successfully.', 'success')
+        else:
+            flash('Version not found.', 'danger')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting version: {str(e)}', 'danger')
+
+    return redirect(url_for('version_history'))
+
+
 
 @app.route('/create_backup', methods=['POST'])
 @login_required
@@ -426,15 +507,15 @@ def create_backup():
             user_id=session['user_id'],
             description="Backup process initiated"
         )
-        db.session.add(activity)  # Add the activity log to the session
+        db.session.add(activity)  
 
         # Commit both the new backup and the activity log
         db.session.commit()
 
-        flash('Backup created successfully!', 'success')
+        flash('Backup created successfully!',  ('version','success'))
     except Exception as e:
         db.session.rollback()  # Rollback changes if there is an error
-        flash(f'An error occurred while creating the backup: {str(e)}', 'danger')
+        flash(f'An error occurred while creating the backup: {str(e)}',  ('version','danger'))
 
     return redirect(url_for('backup_status'))
 
@@ -479,12 +560,13 @@ def restore_version(version_id):
         # Commit the activity log
         db.session.commit()
 
-        flash('Configuration restored successfully!', 'success')
+        flash('Configuration restored successfully!',('version', 'success'))
     except Exception as e:
         db.session.rollback()
-        flash(f'Error restoring configuration version: {str(e)}', 'danger')
+        flash(f'Error restoring configuration version: {str(e)}', ('version', 'danger'))
 
     return redirect(url_for('version_history'))
+
 @app.route('/configuration_deployment', methods=['GET', 'POST'])
 @login_required
 def configuration_deployment():

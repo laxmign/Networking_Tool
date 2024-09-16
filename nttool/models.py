@@ -142,6 +142,7 @@ class ConfigurationVersion(db.Model):
     version_number = db.Column(db.String(100))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    description = db.Column(db.Text, nullable=True)
 
     def __repr__(self):
         return f'<ConfigurationVersion {self.version_number}>'

@@ -34,6 +34,11 @@
             align-items: center;
             padding: 1rem;
             background-color: var(--primary-bg);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
         }
 
         .logo {
@@ -48,11 +53,10 @@
 
         .side-buttons {
             position: fixed;
-            top: 6rem;
+            top: 120px; /* Adjusted to account for top bar and welcome section */
             left: 1rem;
             z-index: 10;
         }
-
         .side-buttons a {
             display: block;
             margin-bottom: 0.5rem;
@@ -72,13 +76,13 @@
         .side-buttons a:hover {
             background-color: var(--button-hover);
         }
-
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1rem;
             margin: 1rem;
             padding-left: 12rem;
+            padding-top: 8rem;
         }
 
         .dashboard-grid .card {
@@ -141,11 +145,16 @@
             padding: 0.5rem 1rem;
             background-color: var(--secondary-bg);
             color: var(--primary-text);
-            margin-bottom: 1rem;
+            position: fixed;
+            top: 4rem;
+            left: 0;
+            right: 0;
+            z-index: 900;
         }
 
         .welcome-section .user-name {
-            font-size: 1.25rem;
+            margin: 0;
+            font-size: 1.5rem;
         }
 
         .welcome-section .logout-button {
@@ -223,44 +232,64 @@
             .dashboard-grid {
                 grid-template-columns: 1fr;
                 padding-left: 1rem;
+                padding-top: 12rem;
             }
 
             .side-buttons {
-                position: static;
+                position: fixed;
+                top: 8rem;
+                left: 0;
+                right: 0;
                 display: flex;
                 justify-content: center;
-                margin-bottom: 1rem;
+                background-color: var(--primary-bg);
+                padding: 0.5rem;
             }
 
             .side-buttons a {
                 margin: 0 0.5rem;
+                width: auto;
             }
 
             .chat-button {
                 bottom: 5rem;
             }
+
+            .welcome-section {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1rem;
+            }
+
+            .welcome-section .user-name {
+                margin-bottom: 0.5rem;
+            }
         }
     </style>
 </head>
+<!DOCTYPE html>
+<html lang="en">
+
 <body>
     <header class="top-bar">
         <div class="logo">analytix</div>
         <nav>
             <span class="dashboard">Dashboard</span>
-           
         </nav>
     </header>
 
-    <main>
-        <section class="welcome-section">
-            <h1 class="user-name">Welcome, {{ user.first_name }}!</h1>
-            <a href="{{ url_for('logout') }}" class="logout-button" onclick="return confirm('Are you sure you want to log out?')">Logout</a>
-        </section>
+    <section class="welcome-section">
+        <h1 class="user-name">Welcome, {{ user.first_name }}!</h1>
+        <a href="{{ url_for('logout') }}" class="logout-button" onclick="return confirm('Are you sure you want to log out?')">Logout</a>
+    </section>
 
-        <nav class="side-buttons">
-            <a href="{{ url_for('backup_status') }}"  aria-label="Trigger Backup">Backup Status</a>
-            <a href="{{ url_for('recent_activity') }}" aria-label="View Recent Activity">Recent Activity</a>
-        </nav>
+    <nav class="side-buttons">
+       
+        <a href="{{ url_for('recent_activity') }}" aria-label="View Recent Activity">Recent Activity</a>
+         <a href="{{ url_for('backup_status') }}" aria-label="View Backup Status">Backup Status</a>
+
+        
+    </nav>
 
         <div class="dashboard-grid">
             <a href="{{ url_for('version_history') }}" class="card">

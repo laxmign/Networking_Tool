@@ -154,7 +154,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for activity in activities %}
+                    {% for activity in activities[:10] %}
                     <tr>
                         <td>{{ activity.timestamp }}</td>
                         <td>{{ activity.description }}</td>

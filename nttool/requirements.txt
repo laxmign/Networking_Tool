@@ -9,3 +9,4 @@ itsdangerous==2.1.2
 jsonify
 flask-socketio 
 eventlet
+deepdiff

@@ -1,0 +1,160 @@
+<style>
+    body {
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            background-color: #C66442;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 60%;
+            margin: auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        h1, h2, h3 {
+            text-align: center;
+            color: #fff;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        h2, h3 {
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        textarea {
+            resize: vertical;
+        }
+        button[type="submit"] {
+            padding: 12px 20px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        ul li {
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        ul li a {
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        ul li a:hover {
+            background-color: #45a049;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            font-size: 16px;
+            background-color: #581bc2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background-color: #555;
+        }
+        .flashes {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+        .flashes li {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        .flashes .success {
+            background-color: #4CAF50;
+        }
+        .flashes .danger {
+            background-color: #f44336;
+        }
+        .flashes .info {
+            background-color: #2196F3;
+        }
+        .flashes .warning {
+            background-color: #ff9800;
+        }
+
+</style>
+
+<div class="container">
+    <a href="{{ url_for('dashboard') }}" class="back-button">Back</a>
+    <h1>Configuration Deployment</h1>
+
+<div class="container">
+    <h2>Comparing Version {{ version.version_number }}</h2>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="second_version_id">Select Version to Compare With</label>
+            <select name="second_version_id" class="form-control" required>
+                {% for v in all_versions %}
+                <option value="{{ v.id }}">Version {{ v.version_number }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Compare</button>
+    </form>
+
+    <!-- If a comparison has been made, display the results -->
+    {% if second_version %}
+        <h3>Comparing with Version {{ second_version.version_number }}</h3>
+        <h4>Differences:</h4>
+        <pre>{{ differences | tojson(indent=2) }}</pre>
+    {% endif %}
+</div>
