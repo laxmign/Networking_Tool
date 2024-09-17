@@ -1,0 +1,35 @@
+[
+  {
+    "version_number": "1.0",
+    "user_id": 1,
+    "description": {
+      "change_log": "Initial version",
+      "configurations": {
+        "setting1": "value1",
+        "setting2": "value2"
+      }
+    }
+  },
+  {
+    "version_number": "2.0",
+    "user_id": 1,
+    "description": {
+      "change_log": "Added new feature",
+      "configurations": {
+        "setting1": "new_value",
+        "setting3": "value3"
+      }
+    }
+  },
+  {
+    "version_number": "3.0",
+    "user_id": 1,
+    "description": {
+      "change_log": "Bug fixes and optimizations",
+      "configurations": {
+        "setting1": "optimized_value",
+        "setting4": "value4"
+      }
+    }
+  }
+]

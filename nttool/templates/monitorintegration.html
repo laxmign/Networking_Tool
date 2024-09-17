@@ -198,8 +198,8 @@
                             <th>Device Name</th>
                             <th>IP Address</th>
                             <th>Status</th>
-                            <th>Uptime</th>
-                            <th>Performance</th>
+                            <th>CPU</th>
+                            <th>MEMORY</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -211,8 +211,8 @@
                     <td>${device.name}</td>
                     <td>${device.ip}</td>
                     <td>${device.status}</td>
-                    <td>${device.uptime}</td>
-                    <td>${device.performance}</td>
+                    <td>${device.cpu || 'N/A'}</td>
+                    <td>${device.memory || 'N/A'}</td>
                 </tr>
             `;
         });

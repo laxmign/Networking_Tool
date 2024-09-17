@@ -115,6 +115,26 @@
             bottom: 0;
             width: 100%;
         }
+        .flash-message {
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.backup.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.backup.danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+
     </style>
 </head>
 <body>
@@ -128,6 +148,22 @@
             </ul>
         </nav>
     </header>
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for categories, message in messages %}
+                    {% if 'backup' in categories %}
+                        <div class="flash-message {{ ' '.join(categories) }}">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+
 
     <main>
         <h1>Backup Status</h1>
@@ -150,8 +186,9 @@
                         <td>{{ backup.status }}</td>
                         <td>{{ backup.message }}</td>
                         <td>
-                            <a href="{{ url_for('restore_backup', backup_id=backup.id) }}" class="btn btn-small">Restore</a>
-                            <a href="{{ url_for('download_backup', backup_id=backup.id) }}" class="btn btn-small">Download</a>
+                            <a href="{{ url_for('download_backup', backup_id=backup.id) }}" 
+                               class="btn btn-small" 
+                               onclick="return confirmDownload('{{ backup.id }}')">Download</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -160,18 +197,17 @@
         </section>
 
         <section class="create-backup">
-            <h2>Create New Backup</h2>
+            <h2>Initialize New Backup</h2>
             <form action="{{ url_for('create_backup') }}" method="post">
-               
-                <button type="submit" class="btn">Create Backup</button>
+                <button type="submit" class="btn">Initialize Backup</button>
             </form>
         </section>
     </main>
 
-    
-
     <script>
-        // You can add any necessary JavaScript here
+        function confirmDownload(backupId) {
+            return confirm("Are you sure you want to download backup #" + backupId + "?");
+        }
     </script>
 </body>
 </html>

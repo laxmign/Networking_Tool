@@ -1,47 +1,33 @@
 {
-  "deployment_id": "12345",
-  "deployment_name": "Network Config Deployment",
-  "created_by": "admin",
-  "created_at": "2024-09-15T12:34:56Z",
-  "description": "Bulk deployment of new configurations across the network devices",
-  "devices": [
+  "device_name": "Router-01",
+  "interfaces": [
     {
-      "device_id": "R1",
-      "device_name": "Router 1",
-      "device_ip": "192.168.1.1",INSERT INTO deployment_history (id, profile_id, user_id, deployed_at)
-      VALUES (
-          id:INTEGER,
-          profile_id:INTEGER,
-          user_id:INTEGER,
-          'deployed_at:DATETIME'
-        );
-      "config_version": "v1.2.3",
-      "status": "pending"
+      "interface_name": "GigabitEthernet0/1",
+      "ip_address": "192.168.1.1",
+      "subnet_mask": "255.255.255.0",
+      "status": "up"
     },
     {
-      "device_id": "SW1",
-      "device_name": "Switch 1",
-      "device_ip": "192.168.1.2",
-      "config_version": "v1.2.3",
-      "status": "pending"
+      "interface_name": "GigabitEthernet0/2",
+      "ip_address": "192.168.2.1",
+      "subnet_mask": "255.255.255.0",
+      "status": "down"
     }
   ],
-  "config_details": {
-    "config_type": "standard",
-    "config_source": "git_repo",
-    "repo_url": "https://repo.example.com/network-config.git",
-    "branch": "main",
-    "last_commit": "abc123def456"
+  "routing": {
+    "protocol": "OSPF",
+    "area": 0,
+    "networks": [
+      "192.168.1.0/24",
+      "192.168.2.0/24"
+    ]
   },
-  "deployment_status": "initiated",
-  "schedule": {
-    "start_time": "2024-09-16T01:00:00Z",
-    "end_time": "2024-09-16T05:00:00Z",
-    "timezone": "UTC"
+  "dns": {
+    "primary": "8.8.8.8",
+    "secondary": "8.8.4.4"
   },
-  "notifications": {
-    "on_success": true,
-    "on_failure": true,
-    "email_recipients": ["network-admin@example.com"]
-  }
+  "ntp_servers": [
+    "ntp1.example.com",
+    "ntp2.example.com"
+  ]
 }

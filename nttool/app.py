@@ -1,7 +1,10 @@
+
 from datetime import datetime
 import random
 import json
+import os
 import threading
+from time import sleep
 from flask_socketio import SocketIO, emit
 from flask import Flask,jsonify, render_template, request, redirect, send_file, session, url_for, flash
 from models import (
@@ -70,7 +73,6 @@ def login():
             return redirect(url_for('login'))
 
     return render_template('login.html')
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -183,8 +185,7 @@ def get_user_details(user_id):
             'email': user.email,
             'role': user.role.name if user.role else None,
             'profile': {
-                'bio': user.profile.bio if user.profile else None,
-                'website': user.profile.website if user.profile else None
+
             } if user.profile else None
         }
         
@@ -243,6 +244,10 @@ def add_user_device():
     identifier = data.get('identifier')
 
     try:
+        pass
+    except Exception as e:
+        # Handle the exception here
+        print(f"An error occurred: {str(e)}")
         if type_ == 'device':
             new_device = Device(name=name, ip_address=identifier)
             db.session.add(new_device)
@@ -374,10 +379,16 @@ def compare_version(version_id):
         return redirect(url_for('version_history'))
 
     if request.method == 'POST':
-        # Fetch the second version to compare from the form data
         second_version_id = request.form.get('second_version_id')
 
-        # Check if the same version is selected for comparison
+        if not second_version_id:
+            flash('Please select a second version for comparison.', 'warning')
+            return redirect(url_for('compare_version', version_id=version_id))
+
+        if not second_version_id.isdigit():
+            flash('Invalid version selected for comparison', 'danger')
+            return redirect(url_for('compare_version', version_id=version_id))
+
         if int(second_version_id) == version_id:
             flash('Cannot compare the same version with itself. Please select a different version.', 'danger')
             return redirect(url_for('compare_version', version_id=version_id))
@@ -388,12 +399,10 @@ def compare_version(version_id):
             flash('The second version to compare was not found', 'danger')
             return redirect(url_for('compare_version', version_id=version_id))
 
-        # Ensure that both versions have a valid description before attempting to load JSON
         if not version.description or not second_version.description:
             flash('One or both versions have no description to compare.', 'danger')
             return redirect(url_for('compare_version', version_id=version_id))
 
-        # Parse the JSON descriptions for both versions
         try:
             json_1 = json.loads(version.description)
             json_2 = json.loads(second_version.description)
@@ -401,13 +410,13 @@ def compare_version(version_id):
             flash('Invalid JSON format in one or both versions', 'danger')
             return redirect(url_for('compare_version', version_id=version_id))
 
-        # Use DeepDiff to find the differences between the two JSON objects
         differences = DeepDiff(json_1, json_2, ignore_order=True).to_dict()
 
-        # Render the comparison result dynamically
+        if not differences:
+            flash('No differences found between the two versions', 'info')
+
         return render_template('compare_version.html', version=version, second_version=second_version, differences=differences)
 
-    # On GET request, just render the page to allow the user to select a second version
     all_versions = ConfigurationVersion.query.filter(ConfigurationVersion.id != version_id).all()
     return render_template('compare_version.html', version=version, all_versions=all_versions)
 
@@ -436,7 +445,7 @@ def create_version():
         new_version = ConfigurationVersion(
             version_number=version_number,
             user_id=session['user_id'],  # User ID from session
-            created_at=datetime.utcnow(),  # Automatically handled by default in the model
+            created_at=datetime.now(),  # Automatically handled by default in the model
             description=json.dumps(json_description)  # Store the description as a JSON string
         )
         db.session.add(new_version)  # Add the new version to the session
@@ -498,7 +507,7 @@ def create_backup():
             user_id=session['user_id'],
             status='In Progress',  # Initial status, can be updated later
             message='Backup initiated',
-            timestamp=datetime.utcnow()
+            timestamp=datetime.now()
         )
         db.session.add(new_backup)  # Add the new backup to the session
 
@@ -509,16 +518,24 @@ def create_backup():
         )
         db.session.add(activity)  
 
-        # Commit both the new backup and the activity log
+       
         db.session.commit()
 
-        flash('Backup created successfully!',  ('version','success'))
+        # Delay for 2-3 seconds
+        sleep(3)
+
+        # Update the status to 'Completed'
+        new_backup.status = 'Completed'
+        new_backup.message = 'Backup completed successfully'
+        new_backup.timestamp = datetime.now()  
+        db.session.commit()
+
+        flash('Backup created successfully!',  ('backup','success'))
     except Exception as e:
         db.session.rollback()  # Rollback changes if there is an error
-        flash(f'An error occurred while creating the backup: {str(e)}',  ('version','danger'))
+        flash(f'An error occurred while creating the backup: {str(e)}',  ('backup','danger'))
 
     return redirect(url_for('backup_status'))
-
 
 @app.route('/download_backup/<int:backup_id>')
 @login_required
@@ -527,17 +544,18 @@ def download_backup(backup_id):
     backup = BackupStatus.query.get(backup_id)
 
     if not backup:
-        flash('Backup not found', 'danger')
+        flash('Backup not found',  ('backup','Success'))
         return redirect(url_for('backup_status'))
 
-   
-    
-    backup_file_path = f"/path/to/backups/{backup_id}.zip"  # Example file path for the backup
+    # Example file path for the backup
+    backup_file_path = os.path.join(app.root_path, 'static', 'backup', f'{backup_id}.zip')
+
     try:
+        # Flash success message when the backup is successfully found
+        flash(f'Successfully Downloaded backup {backup_id}',  ('backup','success'))
         return send_file(backup_file_path, as_attachment=True)
-    except FileNotFoundError:
-        flash('Backup file not found', 'danger')
-        return redirect(url_for('backup_status'))
+    except Exception as e:
+       return redirect(url_for('backup_status'))
 
 
 @app.route('/restore_version/<int:version_id>')
@@ -545,7 +563,7 @@ def download_backup(backup_id):
 def restore_version(version_id):
     version = ConfigurationVersion.query.get(version_id)
     if not version:
-        flash('Version not found', 'danger')
+        flash('Version not found',  ('backup','danger'))
         return redirect(url_for('version_history'))
 
     try:
@@ -579,6 +597,13 @@ def configuration_deployment():
             flash('Both profile name and data are required', ('deployment', 'danger'))
             return redirect(url_for('configuration_deployment'))
 
+        # Validation: Check if profile_data is valid JSON
+        try:
+            json.loads(profile_data)  # Try parsing the profile data as JSON
+        except ValueError:
+            flash('Profile data must be valid JSON', ('deployment', 'danger'))
+            return redirect(url_for('configuration_deployment'))
+
         # Try to create a new profile
         try:
             new_profile = ConfigurationProfile(
@@ -597,7 +622,7 @@ def configuration_deployment():
 
             # Commit both the new profile and the activity log
             db.session.commit()
-            flash(f'Profile {profile_name} created successfully!',('deployment', 'success'))
+            flash(f'Profile {profile_name} created successfully!', ('deployment', 'success'))
 
         except Exception as e:
             db.session.rollback()
@@ -612,7 +637,6 @@ def configuration_deployment():
 
     # Render the configuration deployment page with profiles and history
     return render_template('configuration_deployment.html', profiles=profiles, deployment_history=deployment_history)
-
 
 @app.route('/deploy_profile/<int:profile_id>')
 @login_required
@@ -642,7 +666,9 @@ def deploy_profile(profile_id):
 def deploy_logic(profile):
     print(f"Deploying profile: {profile.profile_name}")
     print(f"Configuration data: {profile.profile_data}")
-    # TODO: Add real deployment logic here
+   
+
+
 
 if __name__ == '__main__':
     threading.Thread(target=generate_network_data, daemon=True).start()

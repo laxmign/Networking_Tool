@@ -133,10 +133,9 @@
 </style>
 
 <div class="container">
-    <a href="{{ url_for('dashboard') }}" class="back-button">Back</a>
-    <h1>Configuration Deployment</h1>
+    <a href="{{ url_for('version_history') }}" class="back-button">Back</a>
+    <h1>Compare Version</h1>
 
-<div class="container">
     <h2>Comparing Version {{ version.version_number }}</h2>
 
     <form method="POST">
@@ -144,17 +143,24 @@
             <label for="second_version_id">Select Version to Compare With</label>
             <select name="second_version_id" class="form-control" required>
                 {% for v in all_versions %}
-                <option value="{{ v.id }}">Version {{ v.version_number }}</option>
+                    <option value="{{ v.id }}">Version {{ v.version_number }}</option>
+                {% else %}
+                    <option disabled>No other versions available for comparison</option>
                 {% endfor %}
             </select>
         </div>
-        <button type="submit" class="btn btn-primary">Compare</button>
+        <button type="submit" class="btn btn-primary" {% if not all_versions %} disabled {% endif %}>Compare</button>
     </form>
 
-    <!-- If a comparison has been made, display the results -->
-    {% if second_version %}
-        <h3>Comparing with Version {{ second_version.version_number }}</h3>
-        <h4>Differences:</h4>
-        <pre>{{ differences | tojson(indent=2) }}</pre>
-    {% endif %}
+    <!-- Display comparison results if available -->
+    {% if differences %}
+    <h3>Differences:</h3>
+    <ul>
+        {% for key, value in differences.items() %}
+            <li>{{ key }}: {{ value }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No differences found between the versions.</p>
+{% endif %}
 </div>
