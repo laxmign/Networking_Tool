@@ -128,37 +128,32 @@
 
     <button class="back-button" onclick="goBack()">← Back</button>
 
-<div class="container">
-    <h1>Settings</h1>
-
-    <button class="button" onclick="showManageUserAccount('{{ user.id }}')">Manage User Account</button>
-    <button class="button" onclick="showAddUsersDevices()">Add Users and Devices</button>
-    <button class="button" onclick="showNetworkSettings()">Network Settings</button>
-    <button class="button" onclick="showNotificationSettings()">Notification Settings</button>
-    <a class="logout-button" href="{{ url_for('logout') }}" >Log Out</a>
-
-
-    <div id="output" class="output"></div>
-</div>
-
-<script>
-
-function goBack() {
+    <div class="container">
+        <h1>Settings</h1>
+    
+        <button class="button" onclick="showManageUserAccount('{{ user.id| int }}')">Manage User Account</button>
+        <button class="button" onclick="showAddUsersDevices()">Add Devices</button>
+        <button class="button" onclick="showNetworkSettings()">Network Settings</button>
+        <button class="button" onclick="showNotificationSettings()">Notification Settings</button>
+        <a class="logout-button" href="{{ url_for('logout') }}" >Log Out</a>
+    
+        <div id="output" class="output"></div>
+    </div>
+    
+    <script>
+    function goBack() {
         window.history.back();
     }
-
- 
-
+    
     function showManageUserAccount(userId) {
     fetch(`/api/user/${userId}`)
         .then(response => response.json())
         .then(accountInfo => {
-            
             const manageUserHtml = `
                 <h3>Manage User Account</h3>
                 <div class="input-field">
                     <label>Username: </label>
-                    <input type="text" value="${accountInfo. first_name}" disabled>
+                    <input type="text" value="${accountInfo.first_name}" disabled>
                 </div>
                 <div class="input-field">
                     <label>Email: </label>
@@ -169,16 +164,19 @@ function goBack() {
                     <input type="text" value="${accountInfo.role}" disabled>
                 </div>
                 <div class="input-field">
-                    <label>Permissions: </label>
-                    <input type="text" value="${accountInfo.permissions ? accountInfo.permissions.join(', ') : ''}" disabled>
+                    <label>Current Password: </label>
+                    <input type="password" id="current-password" placeholder="Enter current password">
                 </div>
                 <div class="input-field">
-                    <label>Password: </label>
-                    <input type="password" placeholder="Enter new password">
+                    <label>New Password: </label>
+                    <input type="password" id="new-password" placeholder="Enter new password">
                 </div>
-                <button class="button" onclick="saveChanges(${userId})">Save Changes</button>
+                <div class="input-field">
+                    <label>Confirm New Password: </label>
+                    <input type="password" id="confirm-password" placeholder="Confirm new password">
+                </div>
+                <button class="button" onclick="changePassword(${userId})">Change Password</button>
             `;
-
             document.getElementById("output").innerHTML = manageUserHtml;
         })
         .catch(error => {
@@ -187,128 +185,97 @@ function goBack() {
         });
 }
 
-function saveChanges(userId) {
-    // Implement the save functionality here
-    alert('User information updated successfully.');
-}
+function changePassword(userId) {
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
 
-
-function showAddUsersDevices() {
-    const addUserDeviceHtml = `
-        <h3>Add Users and Devices</h3>
-        <div class="input-field">
-            <label>User/Device Name: </label>
-            <input id="name-input" type="text" placeholder="Enter name">
-        </div>
-        <div class="input-field">
-            <label>Type: </label>
-            <select id="type-input">
-                <option value="user">User</option>
-                <option value="device">Device</option>
-            </select>
-        </div>
-        <div class="input-field">
-            <label>Email/Device IP: </label>
-            <input id="identifier-input" type="text" placeholder="Enter email or IP">
-        </div>
-        <button class="button" onclick="addUserOrDevice()">Add</button>
-    `;
-
-    document.getElementById("output").innerHTML = addUserDeviceHtml;
-
-    function addUserOrDevice() {
-    // Get values from the input fields
-    const name = document.getElementById('name-input').value;
-    const type = document.getElementById('type-input').value;
-    const identifier = document.getElementById('identifier-input').value;
-
-    // Validate inputs
-    if (!name || !identifier) {
-        alert('Please fill in all fields.');
+    // Validate that the new password and confirmation match
+    if (newPassword !== confirmPassword) {
+        alert('New passwords do not match.');
         return;
     }
 
-    // Log or display the captured details
-    console.log('Added details:');
-    console.log('Name:', name);
-    console.log('Type:', type);
-    console.log('Identifier (Email/IP):', identifier);
-
-    // You can also display the details in the DOM (optional)
-    document.getElementById('output').innerHTML += `
-        <div>
-            <h4>Added Device/User Details:</h4>
-            <p>Name: ${name}</p>
-            <p>Type: ${type}</p>
-            <p>Identifier (Email/IP): ${identifier}</p>
-        </div>
-    `;
-
-    // (Optional) Send the details to the server if needed
-    fetch('/add_user_device', {
+    // Send data to the server to validate the current password and change it
+    fetch(`/change_password`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            name: name,
-            type: type,
-            identifier: identifier
+            user_id: userId,
+            current_password: currentPassword,
+            new_password: newPassword
         }),
     })
     .then(response => response.json())
     .then(data => {
-        if (data.message) {
-            alert(data.message);
+        if (data.success) {
+            alert('Password changed successfully.');
         } else {
-            alert('Error: Something went wrong.');
+            alert(data.message);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error: Could not add user or device.');
+        alert('Error: Could not change password.');
     });
 }
-
-
-}
-
-function addUserOrDevice() {
-    const name = document.getElementById('name-input').value;
-    const type = document.getElementById('type-input').value;
-    const identifier = document.getElementById('identifier-input').value;
-
-    // Validate inputs
-    if (!name || !identifier) {
-        alert('Please fill in all fields.');
-        return;
+    
+    function saveChanges(userId) {
+        alert('User information updated successfully.');
     }
-
-    // Send data to the server
-    fetch('/add_user_device', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            name: name,
-            type: type,
-            identifier: identifier
-        }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message) {
-            alert(data.message);
-        } else {
-            alert('Error: Something went wrong.');
+    
+    function showAddUsersDevices() {
+        const addUserDeviceHtml = `
+            <h3>Add Devices</h3>
+            <div class="input-field">
+                <label>Device Name: </label>
+                <input id="name-input" type="text" placeholder="Enter device name">
+            </div>
+            <div class="input-field">
+                <label>Device IP Address: </label>
+                <input id="identifier-input" type="text" placeholder="Enter device IP">
+            </div>
+            <button class="button" onclick="addDevice()">Add Device</button>
+        `;
+        document.getElementById("output").innerHTML = addUserDeviceHtml;
+    }
+    
+    function addDevice() {
+        const name = document.getElementById('name-input').value;
+        const identifier = document.getElementById('identifier-input').value;
+    
+        if (!name || !identifier) {
+            alert('Please fill in all fields.');
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error: Could not add user or device.');
-    });
-}
+    
+        fetch('/add_user_device', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name,
+                type: 'device', 
+                identifier: identifier
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message);
+            } else {
+                alert('Error: Something went wrong.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error: Could not add device.');
+        });
+    }
+    
     function showNetworkSettings() {
         const networkSettingsHtml = `
             <h3>Network Settings</h3>
@@ -334,10 +301,9 @@ function addUserOrDevice() {
             </div>
             <button class="button" onclick="alert('Network settings saved successfully.')">Save Settings</button>
         `;
-
         document.getElementById("output").innerHTML = networkSettingsHtml;
     }
-
+    
     function showNotificationSettings() {
         const notificationSettingsHtml = `
             <h3>Notification Settings</h3>
@@ -359,14 +325,9 @@ function addUserOrDevice() {
             </div>
             <button class="button" onclick="alert('Notification settings updated successfully.')">Save Settings</button>
         `;
-
         document.getElementById("output").innerHTML = notificationSettingsHtml;
     }
-
-   
-
-   
-</script>
-
-</body>
-</html>
+    </script>
+    
+    </body>
+    </html>

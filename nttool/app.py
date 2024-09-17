@@ -1,5 +1,5 @@
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 import json
 import os
@@ -40,6 +40,8 @@ def login_required(route_function):
         return route_function(*args, **kwargs)
     return wrapper
 
+
+
 # Routes
 @app.route('/')
 def home():
@@ -66,7 +68,7 @@ def login():
             # Commit both login history and activity log to the database
             db.session.commit()
             
-            flash('Login successful!', 'success')
+            # flash('Login successful!', 'success')
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid email or password', 'danger')
@@ -129,6 +131,37 @@ def forgot_password():
         return redirect(url_for('forgot_password'))
 
     return render_template('forgot_password.html')
+
+
+@app.route('/change_password', methods=['POST'])
+@login_required
+def change_password():
+    data = request.json
+    user_id = data.get('user_id')
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+
+    # Fetch the user from the database
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"success": False, "message": "User not found."}), 404
+
+    # Check if the current password is correct
+    if not check_password_hash(user.password, current_password):
+        return jsonify({"success": False, "message": "Current password is incorrect."}), 400
+
+    # If the current password is correct, update to the new password
+    hashed_password = generate_password_hash(new_password)
+    user.password = hashed_password
+
+    # Commit the changes to the database
+    try:
+        db.session.commit()
+        return jsonify({"success": True, "message": "Password changed successfully."}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/dashboard')
 @login_required
@@ -240,28 +273,38 @@ def backup_status():
 def add_user_device():
     data = request.json
     name = data.get('name')
-    type_ = data.get('type')
     identifier = data.get('identifier')
 
     try:
-        pass
-    except Exception as e:
-        # Handle the exception here
-        print(f"An error occurred: {str(e)}")
-        if type_ == 'device':
-            new_device = Device(name=name, ip_address=identifier)
-            db.session.add(new_device)
-        elif type_ == 'user':
-            new_user = User(first_name=name, email=identifier, password='default_password')
-            db.session.add(new_user)
+        # Randomly set the device status to 'online' or 'offline'
+        status = random.choice(['online', 'offline'])
+
+        # If the device is offline, set lower CPU and memory usage
+        if status == 'offline':
+            cpu_usage = f"{random.randint(0, 30)}%"
+            memory_usage = f"{random.randint(0, 30)}%"
         else:
-            return jsonify({"message": "Invalid type."}), 400
+            # If the device is online, allow full CPU and memory range
+            cpu_usage = f"{random.randint(0, 100)}%"
+            memory_usage = f"{random.randint(0, 100)}%"
 
+        # Create a new device with the generated status, CPU, and memory usage
+        new_device = Device(
+            name=name,
+            ip_address=identifier,
+            status=status,
+            cpu=cpu_usage,
+            memory=memory_usage
+        )
+        db.session.add(new_device)
         db.session.commit()
-        return jsonify({"message": f"{type_.capitalize()} added successfully."}), 201
+
+        return jsonify({"message": f"Device '{name}' added successfully "}), 201
 
     except Exception as e:
+        db.session.rollback()
         return jsonify({"message": str(e)}), 500
+    
 
 # SocketIO events
 @socketio.on('connect')
@@ -527,7 +570,7 @@ def create_backup():
         # Update the status to 'Completed'
         new_backup.status = 'Completed'
         new_backup.message = 'Backup completed successfully'
-        new_backup.timestamp = datetime.now()  
+        new_backup.timestamp =datetime.now()
         db.session.commit()
 
         flash('Backup created successfully!',  ('backup','success'))
