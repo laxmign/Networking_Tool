@@ -171,60 +171,62 @@
     }
 
     function showDevicePerformance() {
-        currentView = 'devicePerformance';
-        fetch('/device_performance')
-            .then(response => response.json())
-            .then(devices => {
-                updateDevicePerformance(devices);
-            })
-            .catch(error => {
-                console.error('Error fetching device performance:', error);
-                document.getElementById("output").innerHTML = "<p>Error loading device performance data.</p>";
-            });
-    }
+    currentView = 'devicePerformance';
 
-    function updateDevicePerformance(devices) {
-        if (devices.length === 0) {
-            document.getElementById("output").innerHTML = "<p>No device data available.</p>";
-            return;
-        }
-
-        let devicePerformanceHtml = `
-            <h3>Device Performance</h3>
-            <div class="device-performance">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Device Name</th>
-                            <th>IP Address</th>
-                            <th>Status</th>
-                            <th>CPU</th>
-                            <th>MEMORY</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
-
-        devices.forEach(device => {
-            devicePerformanceHtml += `
-                <tr>
-                    <td>${device.name}</td>
-                    <td>${device.ip}</td>
-                    <td>${device.status}</td>
-                    <td>${device.cpu || 'N/A'}</td>
-                    <td>${device.memory || 'N/A'}</td>
-                </tr>
-            `;
+    // Fetch the user's device data
+    fetch('/device_performance')
+        .then(response => response.json())
+        .then(devices => {
+            updateDevicePerformance(devices);  // Call the function to update the UI
+        })
+        .catch(error => {
+            console.error('Error fetching device performance:', error);
+            document.getElementById("output").innerHTML = "<p>Error loading device performance data.</p>";
         });
+}
 
-        devicePerformanceHtml += `
-                    </tbody>
-                </table>
-            </div>
-        `;
-
-        document.getElementById("output").innerHTML = devicePerformanceHtml;
+function updateDevicePerformance(devices) {
+    if (devices.length === 0) {
+        document.getElementById("output").innerHTML = "<p>No device data available.</p>";
+        return;
     }
+
+    let devicePerformanceHtml = `
+        <h3>Device Performance</h3>
+        <div class="device-performance">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Device Name</th>
+                        <th>IP Address</th>
+                        <th>Status</th>
+                        <th>CPU</th>
+                        <th>MEMORY</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    devices.forEach(device => {
+        devicePerformanceHtml += `
+            <tr>
+                <td>${device.name}</td>
+                <td>${device.ip}</td>
+                <td>${device.status}</td>
+                <td>${device.cpu || 'N/A'}</td>
+                <td>${device.memory || 'N/A'}</td>
+            </tr>
+        `;
+    });
+
+    devicePerformanceHtml += `
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    document.getElementById("output").innerHTML = devicePerformanceHtml;
+}
 
     function showHealthIndicator() {
         currentView = 'healthIndicator';

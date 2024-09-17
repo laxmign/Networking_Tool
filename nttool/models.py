@@ -34,6 +34,7 @@ class User(db.Model):
     versions = db.relationship('ConfigurationVersion', backref='user', lazy=True)
     config_profiles = db.relationship('ConfigurationProfile', backref='user', lazy=True)
     deployment_history = db.relationship('DeploymentHistory', backref='user', lazy=True)
+    device = db.relationship('Device', backref='user', lazy=True)
    
 
     def __repr__(self):
@@ -89,6 +90,8 @@ class ConfigurationBackup(db.Model):
         return f'<ConfigurationBackup {self.id} by User {self.user_id}>'
     
 class Device(db.Model):
+
+   
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     ip_address = db.Column(db.String(100), nullable=False)
@@ -96,6 +99,7 @@ class Device(db.Model):
     cpu = db.Column(db.String(10), default='0%')
     memory = db.Column(db.String(10), default='0%')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     def __repr__(self):
         return f'<Device {self.name}>'

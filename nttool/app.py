@@ -288,18 +288,19 @@ def add_user_device():
             cpu_usage = f"{random.randint(0, 100)}%"
             memory_usage = f"{random.randint(0, 100)}%"
 
-        # Create a new device with the generated status, CPU, and memory usage
+        # Create a new device with the generated status, CPU, memory usage, and the user ID
         new_device = Device(
             name=name,
             ip_address=identifier,
             status=status,
             cpu=cpu_usage,
-            memory=memory_usage
+            memory=memory_usage,
+            user_id=session['user_id'],
         )
         db.session.add(new_device)
         db.session.commit()
 
-        return jsonify({"message": f"Device '{name}' added successfully "}), 201
+        return jsonify({"message": f"Device '{name}' added successfully"}), 201
 
     except Exception as e:
         db.session.rollback()
@@ -370,21 +371,31 @@ def generate_device_data():
 
 @app.route('/device_performance', methods=['GET'])
 @login_required
-def get_device_performance():
+def device_performance():
     try:
-        devices = Device.query.all()
-        device_data = []
-        for device in devices:
-            device_data.append({
+        # Get the current user ID from the session
+        user_id = session['user_id']
+
+        # Query the Device model to get all devices for the logged-in user
+        devices = Device.query.filter_by(user_id=user_id).all()
+
+        # Format the device data into a JSON-friendly structure
+        devices_data = [
+            {
                 'name': device.name,
                 'ip': device.ip_address,
                 'status': device.status,
                 'cpu': device.cpu,
                 'memory': device.memory
-            })
-        return jsonify(device_data), 200
+            }
+            for device in devices
+        ]
+
+        # Return the device data as a JSON response
+        return jsonify(devices_data), 200
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"message": str(e)}), 500
 
 @app.route('/recent_activity', methods=['GET', 'POST'])
 @login_required
