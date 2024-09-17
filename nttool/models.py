@@ -47,7 +47,7 @@ class Profile(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     bio = db.Column(db.String(255))
     profile_picture = db.Column(db.String(100))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
 
     def __repr__(self):
         return f'<Profile {self.user_id}>'
@@ -57,7 +57,7 @@ class LoginHistory(db.Model):
     __tablename__ = 'login_history'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    login_time = db.Column(db.DateTime, default=datetime.utcnow)
+    login_time = db.Column(db.DateTime, default=datetime.now)
     ip_address = db.Column(db.String(45))  # Support for both IPv4 and IPv6 addresses
 
     def __repr__(self):
@@ -84,7 +84,7 @@ class ConfigurationBackup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     config_data = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
 
     def __repr__(self):
         return f'<ConfigurationBackup {self.id} by User {self.user_id}>'
@@ -98,7 +98,7 @@ class Device(db.Model):
     status = db.Column(db.String(50), default='offline')
     cpu = db.Column(db.String(10), default='0%')
     memory = db.Column(db.String(10), default='0%')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     def __repr__(self):
@@ -109,7 +109,7 @@ class Device(db.Model):
 class BackupStatus(db.Model):
     __tablename__ = 'backup_status'
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.now)
     status = db.Column(db.String(50))  # e.g., 'Success', 'Failed'
     message = db.Column(db.String(255))  # Optional message about the backup result
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))  # Link to the user
@@ -122,7 +122,7 @@ class BackupStatus(db.Model):
 class ActivityLog(db.Model):
     __tablename__ = 'activity_log'
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.now)
     description = db.Column(db.String(255))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
@@ -136,7 +136,7 @@ class ConfigurationProfile(db.Model):
     profile_name = db.Column(db.String(100), nullable=False)
     profile_data = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Corrected foreign key
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
 
     deployments = db.relationship('DeploymentHistory', backref='profile', lazy=True)
 
@@ -145,7 +145,7 @@ class ConfigurationVersion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     version_number = db.Column(db.String(100))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
     description = db.Column(db.Text, nullable=True)
 
     def __repr__(self):
@@ -157,4 +157,4 @@ class DeploymentHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     profile_id = db.Column(db.Integer, db.ForeignKey('configuration_profile.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Corrected foreign key
-    deployed_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    deployed_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
